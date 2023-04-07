@@ -1,0 +1,10 @@
+POST http://127.0.0.1:8000/ingest-file?subscriber_id=testCompany&subscription=extractionresponse
+Content-Type: multipart/form-data; boundary=fileboundary
+
+--fileboundary
+Content-Disposition: form-data; name="file"; filename="test.txt"
+Content-Type: application/octet-stream
+
+<< C:\src\pdfExtractNERAPI\tests\files\100557.pdf >>
+
+--fileboundary--
