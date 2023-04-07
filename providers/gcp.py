@@ -5,6 +5,7 @@ from typing import Union
 from avro.schema import parse
 from avro.io import BinaryEncoder, DatumWriter
 from fastapi import File, UploadFile
+from google.api_core.exceptions import NotFound
 from google.cloud import pubsub_v1, storage
 from google.cloud.pubsub import SchemaServiceClient
 from google.pubsub_v1.types import Encoding
