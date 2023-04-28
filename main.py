@@ -37,7 +37,7 @@ async def upload_file(subscriber_id: Union[str, None] = None, subscription: Unio
         raise HTTPException(status_code=400, detail={
                             "status": "Bad Request", "error": error_msg})
     
-    result = await upload_storage_file(file)
+    result = await upload_storage_file(file, subscriber_id)
     
     if result["error"]:
         error_msg = result["error"]
@@ -45,8 +45,9 @@ async def upload_file(subscriber_id: Union[str, None] = None, subscription: Unio
         raise HTTPException(status_code=500, detail={
                             "status": "Internal Server Error", "error": error_msg})
     else:
+        file_location = result["file_location"]
         message_id = publish_to_topic(result["file_location"], subscriber_id, subscription)
-        logging.info("File upload successful. Message published to Pub/Sub. Message ID: %s", message_id)
+        logging.info(f"File uploaded to {file_location} successfully. Message published to Pub/Sub. Message ID: {message_id}", )
         return {"status": "success", "file_location": result["file_location"], "message_id": message_id}
 
 

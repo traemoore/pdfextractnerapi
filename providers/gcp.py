@@ -11,7 +11,7 @@ from google.cloud.pubsub import SchemaServiceClient
 from google.pubsub_v1.types import Encoding
 from google.oauth2.service_account import Credentials
 
-creds = Credentials.from_service_account_file('providers\secrets\gcp_client_secret.json')
+creds = Credentials.from_service_account_file('./providers/secrets/gcp_client_secret.json')
 
 # Configure logging
 logging.basicConfig(
