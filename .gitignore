@@ -1,0 +1,48 @@
+# default python gitignore
+venv/ 
+.venv
+# Ignore all logfiles and tempfiles.
+*.[Ll][Oo][Gg]
+*.log
+*.pid
+*.tmp
+*.swp
+*~
+\#*#
+.DS_Store
+
+# Ignore all pycache directories.
+__pycache__/*
+
+# Ignore all node_modules directories.
+node_modules/
+
+# Ignore all dist directories
+dist/
+
+# Ignore all .env files
+.env
+
+# Ignore all .DS_Store files
+.DS_Store
+
+# Ignore all .coverage files
+.coverage
+
+# Ignore all .pytest_cache files
+.pytest_cache
+
+# Ignore all .vscode files
+.vscode
+
+# Ignore all .mypy_cache files
+.mypy_cache
+
+# Ignore all .mypy_cache files
+.mypy_cache
+```
+
+## Usage
+
+```bash
+git clone
