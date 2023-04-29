@@ -46,7 +46,7 @@ jobs:
     - id: 'auth'
       uses: 'google-github-actions/auth@v0'
       with:
-        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+        credentials_json: '${{ secrets.GCP_K8S_STORAGE_WR }}'
 
     - name: Docker configuration
       run: |-
