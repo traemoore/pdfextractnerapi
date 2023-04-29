@@ -65,10 +65,7 @@ jobs:
         location: ${{ env.GKE_ZONE }}
 
     # Build the Docker image
-    - name: Build
-        docker build -t ${{ secrets.REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_NAME }}/api:latest -f api.dockerfile .
-        docker build -t ${{ secrets.REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_NAME }}/processor:latest -f processor.dockerfile
-        
+    - name: Docker Build
       run: |-
         docker build \
           --tag "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$API_IMAGE:$GITHUB_SHA" \
