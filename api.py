@@ -1,9 +1,8 @@
 import logging
-import multiprocessing
+import uvicorn
 from multiprocessing import freeze_support
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from providers.gcp import process_file_topic_name, upload_storage_file, publish_to_topic, get_storage_client, get_subscription_client, get_project_id
-from messaging.handlers import listen_for_messages
+from providers.gcp import process_file_topic_name, upload_storage_file, publish_to_topic, get_storage_client
 from typing import Union
 
 app = FastAPI()
@@ -19,7 +18,7 @@ def health_check():
     return {"status": "active"}
 
 
-@app.get("/gcp-auth")
+@app.get("/auth")
 def gcp_auth_status():
     try:
         buckets = get_storage_client().list_buckets()
@@ -60,17 +59,7 @@ async def upload_file(subscriber_id: Union[str, None] = None, subscription: Unio
         return {"status": "success", "file_location": result["file_location"], "message_id": message_id}
 
 
-def start_app():
-    logger.info("Starting Pub/Sub message listener...")
-    # Start the Pub/Sub message listener process in a separate process
-    listener_process = multiprocessing.Process(target=listen_for_messages)
-    listener_process.start()
-
-    logger.info("Starting FastAPI application...")
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
-
 # Run the FastAPI application
 if __name__ == "__main__":
-    freeze_support()
-    start_app()
+    logger.info("Starting FastAPI application...")
+    uvicorn.run(app, host="0.0.0.0", port=8000)

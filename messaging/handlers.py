@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 process_file_sub = "process-file-sub"
 processed_file_results_sub = "processed-file-results-sub"
+process_file_failure_sub = "process-file-failure-sub"
 
 # Define the message handler function to process incoming messages
 def process_file_message_handler(message):
@@ -36,6 +37,14 @@ def test_process_file_results_message_handler(message):
     logger.info(f"Received process results: {message}")
 
     # Acknowledge the message to remove it from the subscription
+    message.ack()
+
+def test_process_file_failure_message_handler(message):
+    # Process the message here
+    logger.info(f"Received file process failure results: {message}")
+
+    # Acknowledge the message to remove it from the subscription
+    message.ack()
 
 # Define the Pub/Sub message listener process
 def listen_for_messages():
@@ -52,6 +61,11 @@ def listen_for_messages():
         get_project_id(), processed_file_results_sub)
     subscriber.subscribe(process_file_results_sub_path, callback=test_process_file_results_message_handler)
     logger.info(f"Listening for messages on subscription {processed_file_results_sub}...")
+
+    process_file_failure_sub_path = subscriber.subscription_path(
+        get_project_id(), process_file_failure_sub)
+    subscriber.subscribe(process_file_failure_sub_path, callback=test_process_file_failure_message_handler)
+    logger.info(f"Listening for messages on subscription {process_file_failure_sub}...")
    
     while True:
         pass
