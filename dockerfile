@@ -12,6 +12,7 @@ RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 # Install extra dependencies
 RUN apt-get update && apt-get install -y \
+    libgl1 \
     ghostscript \
     python3-tk \
     poppler-utils \

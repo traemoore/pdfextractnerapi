@@ -2,19 +2,20 @@ import logging
 import multiprocessing
 from multiprocessing import freeze_support
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from providers.gcp import upload_storage_file, publish_to_topic, get_storage_client, get_subscription_client, get_project_id
+from providers.gcp import process_file_topic_name, upload_storage_file, publish_to_topic, get_storage_client, get_subscription_client, get_project_id
 from messaging.handlers import listen_for_messages
 from typing import Union
 
 app = FastAPI()
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
-# Endpoints
+
 @app.get("/health")
 def health_check():
-    logging.info("Health check endpoint accessed")
+    logger.info("Health check endpoint accessed")
     return {"status": "active"}
 
 
@@ -22,10 +23,12 @@ def health_check():
 def gcp_auth_status():
     try:
         buckets = get_storage_client().list_buckets()
-        logging.info("GCP authentication status endpoint accessed. Authenticated: %s", buckets is not None)
+        logger.info(
+            "GCP authentication status endpoint accessed. Authenticated: %s", buckets is not None)
         return {"authenticated": buckets is not None}
     except Exception as e:
-        logging.error("Error occurred during GCP authentication status check: %s", e)
+        logger.error(
+            "Error occurred during GCP authentication status check: %s", e)
         return {"error": str(e)}
 
 
@@ -33,31 +36,41 @@ def gcp_auth_status():
 async def upload_file(subscriber_id: Union[str, None] = None, subscription: Union[str, None] = None, file: UploadFile = File(...)):
     if subscriber_id is None or subscription is None:
         error_msg = "subscriber_id and subscription are required."
-        logging.error("Bad request received for /ingest-file endpoint: %s", error_msg)
+        logger.error(
+            "Bad request received for /ingest-file endpoint: %s", error_msg)
         raise HTTPException(status_code=400, detail={
                             "status": "Bad Request", "error": error_msg})
-    
+
     result = await upload_storage_file(file, subscriber_id)
-    
+
     if result["error"]:
         error_msg = result["error"]
-        logging.error("Error occurred during file upload: %s", error_msg)
+        logger.error("Error occurred during file upload: %s", error_msg)
         raise HTTPException(status_code=500, detail={
                             "status": "Internal Server Error", "error": error_msg})
     else:
         file_location = result["file_location"]
-        message_id = publish_to_topic(result["file_location"], subscriber_id, subscription)
-        logging.info(f"File uploaded to {file_location} successfully. Message published to Pub/Sub. Message ID: {message_id}", )
+        message_id = publish_to_topic(
+            {"storage_path": result["file_location"], 
+             "subscriber_id": subscriber_id, 
+             "subscription": subscription}, process_file_topic_name)
+        
+        logger.info(
+            f"File uploaded to {file_location} successfully. Message published to Pub/Sub. Message ID: {message_id}", )
         return {"status": "success", "file_location": result["file_location"], "message_id": message_id}
 
+
+def start_app():
+    logger.info("Starting Pub/Sub message listener...")
+    # Start the Pub/Sub message listener process in a separate process
+    listener_process = multiprocessing.Process(target=listen_for_messages)
+    listener_process.start()
+
+    logger.info("Starting FastAPI application...")
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)
 
 # Run the FastAPI application
 if __name__ == "__main__":
     freeze_support()
-
-    # Start the Pub/Sub message listener process in a separate process
-    listener_process = multiprocessing.Process(target=listen_for_messages)
-    listener_process.start()
-    
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    start_app()

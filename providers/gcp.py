@@ -20,13 +20,18 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],
 )
 
+topic_schema_mapping = {
+    'process-file': 'extraction-request',
+    'processed-file-results': 'extraction-results',
+    'process-file-failure': 'extraction-failed'
+}
+
 # set global variables
 project_id = creds.project_id
-topic_name = f'process-file'
+process_file_topic_name = 'process-file'
+process_file_failure_topic_name = 'process-file-failure'
+processed_file_results_topic_name = 'processed-file-results'
 bucket_name = 'extractner-ingestion'
-schema_folder = 'message-schemas'
-request_schema_id = 'extraction-request'
-response_schema_id = 'extraction-response'
 
 # Initialize a publisher_client client object and a storage client object
 subscriber_client = pubsub_v1.SubscriberClient(credentials=creds)
@@ -37,6 +42,18 @@ schema_cache = {}
 
 def get_project_id():
     return creds.project_id
+
+def download_storage_file(file_path: str) -> Union[bytes, None]:
+    try:
+        bucket = storage_client.get_bucket(bucket_name)
+        blob = bucket.blob(file_path)
+        return blob.download_as_bytes()
+    except NotFound:
+        logging.error(f"File not found: {file_path}")
+        return None
+    except Exception as e:
+        logging.error(f"Error downloading file: {e}")
+        raise Exception(f'Error downloading file: {e}')
 
 async def upload_storage_file(file: UploadFile, folder: str = 'default') -> dict:
     try:
@@ -81,21 +98,16 @@ def get_schema(schema_id):
         logging.error(f"Error getting schema: {e}")
         return None
 
-def publish_to_topic(storage_path, subscriber_id, subscription):
+def publish_to_topic(record, topic):
    
     # Fetch the Topic schema from GCP
-    avro_schema = get_schema(request_schema_id)
+    schema = topic_schema_mapping[topic]
+    avro_schema = get_schema(schema)
     
     if avro_schema is None:
         raise Exception("Topic schema not found.")
-    
-    record = {
-            "storage_path": storage_path,
-            "subscriber_id": subscriber_id,
-            "subscription": subscription
-        }
 
-    topic_path  = publisher_client.topic_path(project_id, topic_name)
+    topic_path  = publisher_client.topic_path(project_id, topic)
     message_schema_validation = avro_schema.validate(record)
 
     if message_schema_validation is None:
@@ -120,15 +132,13 @@ def send_message(avro_schema, record, topic_path):
             writer.write(record, encoder)
             data = bout.getvalue()
             print(f"Preparing a binary-encoded message:\n{data.decode()}")
-        elif encoding == Encoding.JSON:
+        else :
             data_str = json.dumps(record)
             print(f"Preparing a JSON-encoded message:\n{data_str}")
             data = data_str.encode("utf-8")
-        else:
-            print(f"No encoding specified in {topic_path}. Abort.")
-            exit(0)
+        
 
         future = publisher_client.publish(topic_path, data)
         return future.result()
     except NotFound:
-        print(f"{topic_name} not found.")
+        print(f"{topic_path} not found.")
