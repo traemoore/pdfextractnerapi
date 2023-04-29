@@ -52,6 +52,7 @@ jobs:
       run: |-
         echo "DOCKER_PASSWORD=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
         echo $DOCKER_PASSWORD | docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
+
     # Get the GKE credentials so we can deploy to the cluster
     - name: Set up GKE credentials
       uses: google-github-actions/get-gke-credentials@v0
