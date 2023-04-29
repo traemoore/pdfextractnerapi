@@ -25,10 +25,10 @@ jobs:
 
     - name: Build and push Docker images
       run: |
-        docker build -t ${{ secrets.REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_NAME }}/api:latest api/
-        docker build -t ${{ secrets.REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_NAME }}/worker:latest worker/
+        docker build -t ${{ secrets.REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_NAME }}/api:latest -f api.dockerfile .
+        docker build -t ${{ secrets.REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_NAME }}/processor:latest -f processor.dockerfile
         docker push ${{ secrets.REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_NAME }}/api:latest
-        docker push ${{ secrets.REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_NAME }}/worker:latest
+        docker push ${{ secrets.REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_NAME }}/processor:latest
 
     - name: Deploy to GKE
       run: |
