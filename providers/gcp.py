@@ -20,6 +20,8 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],
 )
 
+logger = logging.getLogger(__name__)
+
 topic_schema_mapping = {
     'process-file': 'extraction-request',
     'processed-file-results': 'extraction-results',
@@ -43,32 +45,44 @@ schema_cache = {}
 def get_project_id():
     return creds.project_id
 
-def download_storage_file(file_path: str) -> Union[bytes, None]:
+def download_storage_file(file_path: str, get_config=True) -> Union[bytes, None]:
     try:
         bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob(file_path)
+        if get_config:
+            config_blob = bucket.blob(f'{file_path}.config.json')
+            config = json.loads(config_blob.download_as_string())
+            return blob.download_as_bytes(), config
+        
         return blob.download_as_bytes()
     except NotFound:
-        logging.error(f"File not found: {file_path}")
+        logger.error(f"File not found: {file_path}, download_config: {get_config}")
         return None
     except Exception as e:
-        logging.error(f"Error downloading file: {e}")
+        logger.error(f"Error downloading file: {e}")
         raise Exception(f'Error downloading file: {e}')
 
-async def upload_storage_file(file: UploadFile, folder: str = 'default') -> dict:
+async def upload_storage_file(config, file: UploadFile, folder: str = 'default') -> dict:
     try:
         bucket = storage_client.get_bucket(bucket_name)
         upload_path = f'{folder}/{file.filename}'
-        blob = bucket.blob(upload_path)
-        blob.upload_from_file(file.file, content_type=file.content_type)
-        logging.info(f"Uploaded file: {upload_path}")
+        fileblob = bucket.blob(upload_path)
+        fileblob.upload_from_file(file.file, content_type=file.content_type)
+        logger.info(f"Uploaded file: {upload_path}")
+
+        if config:
+            config_path = f'{folder}/{file.filename}.config.json'
+            configblob = bucket.blob(config_path)
+            configblob.upload_from_string(json.dumps(config, indent=4), content_type=file.content_type)
+            logger.info(f"Uploaded file config: {config_path}")
+
         return {
             "file_location": f'{bucket_name}/{upload_path}',
             "content_type": file.content_type,
             "error": False
         }
     except Exception as e:
-        logging.error(f"Error uploading file: {e}")
+        logger.error(f"Error uploading file: {e}")
         return {
             "file_location": None,
             "content_type": None,
@@ -115,7 +129,7 @@ def publish_to_topic(record, topic):
     
     message_id = send_message(avro_schema, record, topic_path)
 
-    logging.info(f"Published message ID: {message_id}")
+    logger.info(f"Published message ID: {message_id}")
     return message_id
 
 def send_message(avro_schema, record, topic_path):
@@ -141,4 +155,4 @@ def send_message(avro_schema, record, topic_path):
         future = publisher_client.publish(topic_path, data)
         return future.result()
     except NotFound:
-        print(f"{topic_path} not found.")
+        logger.error(f"{topic_path} not found.")

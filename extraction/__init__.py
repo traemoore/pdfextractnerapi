@@ -15,7 +15,7 @@ def process_document(url_path: str, subscriber: str):
     path = '/'.join(target)
     with tempfile.TemporaryDirectory() as temp_dir:
         try:
-            path = download_document(temp_dir, path)
+            path, config = download_document(temp_dir, path)
         except HTTPException as e:
             logger.error("Error while downloading document: %s", e)
             raise e
@@ -28,7 +28,7 @@ def process_document(url_path: str, subscriber: str):
 
         try:
             # TODO using multithreading causes a failure in the docker container - Look into this
-            result = extract_document(path, use_multithreading=False)
+            result = extract_document(path, config)
             result_message = {
                 "storage_path": url_path,
                 "subscriber_id": subscriber,
@@ -53,7 +53,7 @@ def process_document(url_path: str, subscriber: str):
     return True
 
 def download_document(temp_dir: str, url_path: str):
-    file_bites = download_storage_file(url_path)
+    file_bites, config = download_storage_file(url_path)
     file_name = url_path.split('/')[-1]
 
     # use a tempdir to store the file
@@ -61,4 +61,4 @@ def download_document(temp_dir: str, url_path: str):
     with open(path, "wb") as f:
         f.write(file_bites)
 
-    return path
+    return path, config

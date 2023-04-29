@@ -1,7 +1,8 @@
+import json
 import logging
 import uvicorn
 from multiprocessing import freeze_support
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import Body, FastAPI, File, HTTPException, UploadFile
 from providers.gcp import process_file_topic_name, upload_storage_file, publish_to_topic, get_storage_client
 from typing import Union
 
@@ -32,7 +33,12 @@ def gcp_auth_status():
 
 
 @app.post("/ingest-file")
-async def upload_file(subscriber_id: Union[str, None] = None, subscription: Union[str, None] = None, file: UploadFile = File(...)):
+async def upload_file(
+    subscriber_id: Union[str, None] = None,
+    subscription: Union[str, None] = None,
+    file: UploadFile = File(...),
+    body: str = Body(...),
+):
     if subscriber_id is None or subscription is None:
         error_msg = "subscriber_id and subscription are required."
         logger.error(
@@ -40,8 +46,10 @@ async def upload_file(subscriber_id: Union[str, None] = None, subscription: Unio
         raise HTTPException(status_code=400, detail={
                             "status": "Bad Request", "error": error_msg})
 
-    result = await upload_storage_file(file, subscriber_id)
-
+    body = json.loads(body) if body else None
+    
+    result = await upload_storage_file(body, file, subscriber_id)
+    
     if result["error"]:
         error_msg = result["error"]
         logger.error("Error occurred during file upload: %s", error_msg)

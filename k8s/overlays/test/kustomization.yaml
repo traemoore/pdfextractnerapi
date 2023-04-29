@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+- ../../base
+
+images:
+- name: API_IMAGE_PLACEHOLDER
+  newName: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/API_IMAGE:TAG
+- name: WORKER_IMAGE_PLACEHOLDER
+  newName: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/WORKER_IMAGE:TAG

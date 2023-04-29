@@ -18,8 +18,8 @@ process_file_failure_sub = "process-file-failure-sub"
 def process_file_message_handler(message):
     # Process the message here
     logger.info(f"Received process request: {message}")
-    # b'{"storage_path": "extractner-ingestion/testCompany/test.txt", "subscriber_id": "testCompany", "subscription": "extractionresponse"}'
     message.ack()
+    
     data = json.loads(message.data.decode('utf-8'))
     storage_path = data["storage_path"]
     subscriber_id = data["subscriber_id"]
@@ -30,8 +30,6 @@ def process_file_message_handler(message):
         logger.error(f"Error processing file: {storage_path}\n for subscriber_id: {subscriber_id} error:\n{e}")
         
     
-    
-
 def test_process_file_results_message_handler(message):
     # Process the message here
     logger.info(f"Received process results: {message}")
