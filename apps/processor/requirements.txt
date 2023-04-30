@@ -1,5 +1,5 @@
 fastapi==0.95.0
-insights-extractor==0.1.4
+insights-extractor==0.1.6
 uvicorn[standard]==0.21.1
 python-multipart
 google-cloud-pubsub==2.16.0

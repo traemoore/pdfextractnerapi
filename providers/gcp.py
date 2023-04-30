@@ -64,7 +64,7 @@ def download_storage_file(file_path: str, get_config=True) -> Union[bytes, None]
         logger.error(f"Error downloading file: {e}")
         raise Exception(f'Error downloading file: {e}')
 
-async def upload_storage_file(config, file: UploadFile, folder: str = 'default') -> dict:
+async def upload_storage_file(config, file: UploadFile, folder: str = 'default') -> dict: 
     try:
         bucket = storage_client.get_bucket(bucket_name)
         upload_path = f'{folder}/{file.filename}'

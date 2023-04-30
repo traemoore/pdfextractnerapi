@@ -29,21 +29,7 @@ def process_file_message_handler(message):
         message_id = process_document(storage_path, subscriber_id)
     except Exception as e:
         logger.error(f"Error processing file: {storage_path}\n for subscriber_id: {subscriber_id} error:\n{e}")
-        
-    
-def test_process_file_results_message_handler(message):
-    # Process the message here
-    logger.info(f"Received process results: {message}")
 
-    # Acknowledge the message to remove it from the subscription
-    message.ack()
-
-def test_process_file_failure_message_handler(message):
-    # Process the message here
-    logger.info(f"Received file process failure results: {message}")
-
-    # Acknowledge the message to remove it from the subscription
-    message.ack()
 
 def process_health_check_message_handler(message):
     # Process the message here
@@ -62,16 +48,6 @@ def listen_for_messages():
         get_project_id(), process_file_sub)
     subscriber.subscribe(process_file_sub_path, callback=process_file_message_handler)
     logger.info(f"Listening for messages on subscription {process_file_sub}...")
-    
-    process_file_results_sub_path = subscriber.subscription_path(
-        get_project_id(), processed_file_results_sub)
-    subscriber.subscribe(process_file_results_sub_path, callback=test_process_file_results_message_handler)
-    logger.info(f"Listening for messages on subscription {processed_file_results_sub}...")
-
-    process_file_failure_sub_path = subscriber.subscription_path(
-        get_project_id(), process_file_failure_sub)
-    subscriber.subscribe(process_file_failure_sub_path, callback=test_process_file_failure_message_handler)
-    logger.info(f"Listening for messages on subscription {process_file_failure_sub}...")
 
     health_check_sub_path = subscriber.subscription_path(
         get_project_id(), health_check_sub)

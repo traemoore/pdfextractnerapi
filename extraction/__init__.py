@@ -1,8 +1,10 @@
+from asyncore import loop
 import json
+import asyncio
 import logging
 from extractlib.document.process import process_document as extract_document
 from fastapi import HTTPException
-from providers.gcp import processed_file_results_topic_name, process_file_failure_topic_name, download_storage_file, publish_to_topic
+from providers.gcp import processed_file_results_topic_name, process_file_failure_topic_name, download_storage_file, publish_to_topic, upload_storage_file
 import tempfile
 
 logging.basicConfig(level=logging.INFO)
@@ -35,9 +37,17 @@ def process_document(url_path: str, subscriber: str):
                 "topic": "processed-file-results",
                 "results": json.dumps(result)
             }
+            
+            results_path = f'{url_path}.results.json'
 
-            logger.info("sending message:\n%s", result_message)
+            co = upload_storage_file(result_message, results_path)
+
             message_id = publish_to_topic(result_message, processed_file_results_topic_name)
+            logger.info(f"sent message to {subscriber} with results:\n%s", results_path)
+
+            # upload_result = co.cr_await()
+            # logger.info("upload result: %s", upload_result)
+            
             return message_id
         except Exception as e:
             logger.error("Error during document extraction: %s", e)
