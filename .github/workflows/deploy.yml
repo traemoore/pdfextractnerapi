@@ -48,7 +48,8 @@ jobs:
         credentials_json: ${{ secrets.GCP_K8S_STORAGE_WR }}
 
     - name: Debug access token
-      run: echo "Access token: ${{steps.auth.outputs.access_token}}"
+      run: |-
+        echo "Access token: ${{steps.auth.outputs.access_token}}"
 
     - name: Docker configuration
       run: |-
