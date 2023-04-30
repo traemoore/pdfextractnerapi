@@ -49,7 +49,7 @@ jobs:
 
     - name: Debug access token
       run: |-
-        echo "secrets.${{GCP_K8S_STORAGE_WR}}"
+        echo "secrets.${{secrets.GCP_K8S_STORAGE_WR}}"
 
     - name: Docker configuration
       run: |-
