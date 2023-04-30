@@ -45,10 +45,11 @@ jobs:
     - id: get-secrets
       uses: google-github-actions/get-secretmanager-secrets@v0.3.0
       with:
-        secrets: |- 
+        secrets: |
           - name: secret-name
             key: service_account
-        credentials_json: ${{ secrets.GCP_K8S_STORAGE_WR }}
+        credentials: ${{ secrets.GCP_K8S_STORAGE_WR }}
+
 
     - name: Setup gcloud CLI
       uses: google-github-actions/setup-gcloud@v1
