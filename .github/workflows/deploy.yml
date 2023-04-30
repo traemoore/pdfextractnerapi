@@ -45,13 +45,10 @@ jobs:
     - id: 'auth'
       uses: 'google-github-actions/auth@v0'
       with:
-        credentials_json: '${{ secrets.GCP_K8S_STORAGE_WR }}' 
+        credentials_json: '${{ secrets.GCP_K8S_STORAGE_WR }}'
 
-    - name: Debug environment variables
-      run: |
-        echo "GAR_LOCATION: $GAR_LOCATION"
-        echo "PROJECT_ID: $PROJECT_ID"
-        echo "REPOSITORY: $REPOSITORY"
+    - name: Debug access token
+      run: echo "Access token: ${{steps.auth.outputs.access_token}}"
 
     - name: Docker configuration
       run: |-
