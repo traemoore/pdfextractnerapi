@@ -17,3 +17,6 @@ if __name__ == "__main__":
     # Start the Pub/Sub message listener process in a separate process
     listener_process = multiprocessing.Process(target=listen_for_messages)
     listener_process.start()
+
+    while True:
+        pass  

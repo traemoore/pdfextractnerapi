@@ -25,7 +25,8 @@ logger = logging.getLogger(__name__)
 topic_schema_mapping = {
     'process-file': 'extraction-request',
     'processed-file-results': 'extraction-results',
-    'process-file-failure': 'extraction-failed'
+    'process-file-failure': 'extraction-failed',
+    'health-check': 'health-check'
 }
 
 # set global variables
@@ -33,6 +34,7 @@ project_id = creds.project_id
 process_file_topic_name = 'process-file'
 process_file_failure_topic_name = 'process-file-failure'
 processed_file_results_topic_name = 'processed-file-results'
+health_check_topic_name = 'health-check'
 bucket_name = 'extractner-ingestion'
 
 # Initialize a publisher_client client object and a storage client object
@@ -112,7 +114,7 @@ def get_schema(schema_id):
         logging.error(f"Error getting schema: {e}")
         return None
 
-def publish_to_topic(record, topic):
+def  publish_to_topic(record, topic):
    
     # Fetch the Topic schema from GCP
     schema = topic_schema_mapping[topic]

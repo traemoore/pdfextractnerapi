@@ -47,7 +47,7 @@ COPY ./providers/ /app/providers/
 COPY ./messaging/ /app/messaging/
 COPY ./extraction/ /app/extraction/
 COPY apps/processor/ /app/
-COPY processor.py /app/
+COPY worker.py /app/
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
@@ -56,4 +56,4 @@ EXPOSE 8000
 ENV NEW_RELIC_CONFIG_FILE=newrelic.ini
 
 # Run the application
-CMD ["newrelic-admin", "run-program", "python", "processor.py"]
+CMD ["newrelic-admin", "run-program", "python", "worker.py"]
