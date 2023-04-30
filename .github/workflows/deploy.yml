@@ -43,7 +43,7 @@ jobs:
     # Configure Workload Identity Federation and generate an access token.
     # Alternative option - authentication via credentials json
     - id: 'auth'
-      uses: 'google-github-actions/auth@main'
+      uses: 'google-github-actions/auth@v1'
       with:
         credentials_json: '${{ secrets.GCP_K8S_STORAGE_WR }}'
         options: --verbosity debug
